@@ -1,0 +1,20 @@
+{
+  "realm" : "test-realm",
+  "users" : [ {
+    "id" : "f12bf68d-7777-467e-a531-2da48d1d60c9",
+    "username" : "service-account-service-account-client",
+    "emailVerified" : false,
+    "createdTimestamp" : 1740428164801,
+    "enabled" : true,
+    "totp" : false,
+    "serviceAccountClientId" : "service-account-client",
+    "credentials" : [ ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "clientRoles" : {
+      "realm-management" : [ "manage-users" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  } ]
+}
