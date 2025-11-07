@@ -9,7 +9,6 @@ import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -20,19 +19,18 @@ import java.util.UUID;
 @Service
 public class UserService {
 
-    @Value("${keycloak.realm}")
-    private String realm;
-
+    private final KeycloakConfiguration keycloakConfiguration;
     private final Keycloak keycloakClient;
     private final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-    public UserService(Keycloak keycloakClient) {
+    public UserService(Keycloak keycloakClient, KeycloakConfiguration keycloakConfiguration) {
         this.keycloakClient = keycloakClient;
+        this.keycloakConfiguration = keycloakConfiguration;
     }
 
     public UUID createUser(CreateUserRequest command){
 
-        RealmResource realmResource = keycloakClient.realm(realm);
+        RealmResource realmResource = keycloakClient.realm(keycloakConfiguration.realm());
         UserRepresentation user = new UserRepresentation();
 
         user.setFirstName(command.firstName());
@@ -68,7 +66,7 @@ public class UserService {
 
     public Optional<User> getUser(UUID userId){
 
-        RealmResource realmResource = keycloakClient.realm(realm);
+        RealmResource realmResource = keycloakClient.realm(keycloakConfiguration.realm());
         UserResource resource = realmResource.users().get(userId.toString());
 
         try{
