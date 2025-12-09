@@ -29,6 +29,8 @@
     <properties>
         <java.version>25</java.version>
         <keycloak-admin-client.version>26.0.7</keycloak-admin-client.version>
+        <jib.version>3.5.1</jib.version>
+        <git-commit.version>9.0.2</git-commit.version>
     </properties>
     <dependencies>
         <dependency>
@@ -61,6 +63,50 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <version>${git-commit.version}</version>
+                <executions>
+                    <execution>
+                        <id>get-git-info</id>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <generateGitPropertiesFile>false</generateGitPropertiesFile>
+                    <commitIdGenerationMode>full</commitIdGenerationMode>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>${jib.version}</version>
+                <configuration>
+                    <from>
+                        <image>gcr.io/distroless/java25-debian13@sha256:b898108eb09113c21e982d23d94345ccd91b756beb4399a590f74733598c5a0f</image>
+                    </from>
+                    <to>
+                        <!--suppress UnresolvedMavenProperty -->
+                        <image>bigmikecodes/kc-kb:${git.commit.id.full}</image>
+                        <!--Populated via git-commit-id-maven-plugin -->
+                    </to>
+                    <container>
+                        <mainClass>dev.michaelfarrant.kcsb.KcSbApplication</mainClass>
+                        <jvmFlags>
+                            <jvmFlag>-XX:MaxRAMPercentage=75.0</jvmFlag>
+                            <jvmFlag>-XX:+AlwaysPreTouch</jvmFlag>
+                            <jvmFlag>-XX:+UseStringDeduplication</jvmFlag>
+                            <jvmFlag>-XX:+DisableExplicitGC</jvmFlag>
+                        </jvmFlags>
+                    </container>
+                </configuration>
             </plugin>
         </plugins>
     </build>
