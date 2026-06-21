@@ -1,5 +1,6 @@
 package dev.michaelfarrant.kcsb;
 
+import dev.michaelfarrant.kcsb.features.createuser.rest.CreateUserRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -21,13 +22,13 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping("api/users")
-    public ResponseEntity<Void> createUser(@Valid @RequestBody CreateUserRequest request) {
-        UUID userId = userService.createUser(request);
-        URI location = linkTo(methodOn(UserController.class).getUser(userId)).toUri();
-
-        return ResponseEntity.created(location).build();
-    }
+//    @PostMapping("api/users")
+//    public ResponseEntity<Void> createUser(@Valid @RequestBody CreateUserRequest request) {
+//        UUID userId = userService.createUser(request);
+//        URI location = linkTo(methodOn(UserController.class).getUser(userId)).toUri();
+//
+//        return ResponseEntity.created(location).build();
+//    }
 
     @GetMapping("api/users/{userId}")
     public ResponseEntity<User> getUser(@PathVariable("userId") UUID userId){

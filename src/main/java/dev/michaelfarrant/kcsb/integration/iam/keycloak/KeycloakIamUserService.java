@@ -1,11 +1,12 @@
-package dev.michaelfarrant.kcsb;
+package dev.michaelfarrant.kcsb.integration.iam.keycloak;
 
-import dev.michaelfarrant.kcsb.features.createuser.rest.CreateUserRequest;
-import jakarta.ws.rs.NotFoundException;
+import dev.michaelfarrant.kcsb.KeycloakConfiguration;
+import dev.michaelfarrant.kcsb.integration.iam.CreateIamUserArgs;
+import dev.michaelfarrant.kcsb.integration.iam.CreateIamUserResult;
+import dev.michaelfarrant.kcsb.integration.iam.IamUserService;
 import org.apache.http.HttpStatus;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
-import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
@@ -14,30 +15,30 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
-public class UserService {
+public class KeycloakIamUserService implements IamUserService {
 
     private final KeycloakConfiguration keycloakConfiguration;
     private final Keycloak keycloakClient;
-    private final Logger logger = LoggerFactory.getLogger(UserService.class);
+    private final Logger logger = LoggerFactory.getLogger(KeycloakIamUserService.class);
 
-    public UserService(Keycloak keycloakClient, KeycloakConfiguration keycloakConfiguration) {
-        this.keycloakClient = keycloakClient;
+    public KeycloakIamUserService(
+            KeycloakConfiguration keycloakConfiguration,
+            Keycloak keycloakClient) {
         this.keycloakConfiguration = keycloakConfiguration;
+        this.keycloakClient = keycloakClient;
     }
 
-    public UUID createUser(CreateUserRequest command){
-
+    @Override
+    public CreateIamUserResult createUser(CreateIamUserArgs args) {
         RealmResource realmResource = keycloakClient.realm(keycloakConfiguration.realm());
         UserRepresentation user = new UserRepresentation();
 
-        user.setFirstName(command.firstName());
-        user.setLastName(command.lastName());
-        user.setEmail(command.email());
-        user.setUsername(command.email());
+        user.setFirstName(args.firstName());
+        user.setLastName(args.lastName());
+        user.setEmail(args.email());
+        user.setUsername(args.email());
         user.setEmailVerified(true);
         user.setEnabled(true);
 
@@ -60,25 +61,8 @@ public class UserService {
 
             String path = createUserResponse.getLocation().getPath();
             String userIdSegment = path.substring(path.lastIndexOf('/') + 1);
-            return UUID.fromString(userIdSegment);
-        }
 
+            return new CreateIamUserResult(userIdSegment);
+        }
     }
-
-    public Optional<User> getUser(UUID userId){
-
-        RealmResource realmResource = keycloakClient.realm(keycloakConfiguration.realm());
-        UserResource resource = realmResource.users().get(userId.toString());
-
-        try{
-            UserRepresentation representation = resource.toRepresentation();
-            User user = new User(userId, representation.getFirstName(), representation.getLastName(), representation.getEmail());
-            return Optional.of(user);
-        }
-        catch(NotFoundException notFoundException){
-            return Optional.empty();
-        }
-
-    }
-
 }

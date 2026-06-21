@@ -1,4 +1,4 @@
-package dev.michaelfarrant.kcsb;
+package dev.michaelfarrant.kcsb.features.createuser.rest;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
