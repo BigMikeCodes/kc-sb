@@ -28,7 +28,7 @@
     </scm>
     <properties>
         <java.version>25</java.version>
-        <keycloak-admin-client.version>26.0.7</keycloak-admin-client.version>
+        <keycloak-admin-client.version>26.0.9</keycloak-admin-client.version>
         <jib.version>3.5.1</jib.version>
         <git-commit.version>9.0.2</git-commit.version>
     </properties>
