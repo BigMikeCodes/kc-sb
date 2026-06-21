@@ -26,7 +26,7 @@ services:
 
   # keycloak server
   keycloak:
-    image: "quay.io/keycloak/keycloak:26.1.2"
+    image: "quay.io/keycloak/keycloak:26.6.3"
     profiles:
       - default
     ports:
@@ -52,7 +52,7 @@ services:
 
   # Export keycloak realm to ./realms
   keycloak-export:
-    image: "quay.io/keycloak/keycloak:26.1.2"
+    image: "quay.io/keycloak/keycloak:26.6.3"
     profiles:
       - export-realm
     environment:
