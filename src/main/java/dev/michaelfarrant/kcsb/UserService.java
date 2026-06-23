@@ -1,6 +1,6 @@
 package dev.michaelfarrant.kcsb;
 
-import dev.michaelfarrant.kcsb.features.createuser.rest.CreateUserRequest;
+import dev.michaelfarrant.kcsb.usermgmt.features.createuser.rest.CreateUserRequest;
 import jakarta.ws.rs.NotFoundException;
 import org.apache.http.HttpStatus;
 import org.keycloak.admin.client.Keycloak;

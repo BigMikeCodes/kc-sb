@@ -1,9 +1,9 @@
-package dev.michaelfarrant.kcsb.features.createuser.rest;
+package dev.michaelfarrant.kcsb.usermgmt.features.createuser.rest;
 
 import dev.michaelfarrant.kcsb.UserController;
-import dev.michaelfarrant.kcsb.features.createuser.CreateUserCommand;
-import dev.michaelfarrant.kcsb.features.createuser.CreateUserCommandHandler;
-import dev.michaelfarrant.kcsb.features.createuser.CreateUserResult;
+import dev.michaelfarrant.kcsb.usermgmt.features.createuser.CreateUserCommand;
+import dev.michaelfarrant.kcsb.usermgmt.features.createuser.CreateUserCommandHandler;
+import dev.michaelfarrant.kcsb.usermgmt.features.createuser.CreateUserResult;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

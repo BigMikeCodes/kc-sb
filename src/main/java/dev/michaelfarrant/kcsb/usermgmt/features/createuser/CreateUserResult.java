@@ -1,4 +1,4 @@
-package dev.michaelfarrant.kcsb.features.createuser;
+package dev.michaelfarrant.kcsb.usermgmt.features.createuser;
 
 import java.util.UUID;
 
