@@ -6,6 +6,7 @@
 
 volumes:
   kc-db:
+  app-db:
 
 services:
 
@@ -23,6 +24,33 @@ services:
       - POSTGRES_DB=keycloak
     volumes:
       - kc-db:/var/lib/postgresql/data
+
+  # keycloak pg db
+  app-db:
+    image: "postgres:18-alpine"
+    profiles:
+      - default
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=kcsb
+      - POSTGRES_PASSWORD=changeme
+      - POSTGRES_DB=kcsb
+    volumes:
+      - app-db:/var/lib/postgresql/data
+
+  # Flyway migrations
+  flyway:
+    image: "flyway/flyway:12.10-alpine"
+    volumes:
+      - ./flyway.conf:/flyway/conf/flyway.conf:ro
+      - ./migrations:/flyway/sql:ro
+    profiles:
+      - default
+    depends_on:
+      - app-db
+    command:
+      - migrate
 
   # keycloak server
   keycloak:
