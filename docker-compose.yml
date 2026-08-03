@@ -1,5 +1,6 @@
 volumes:
   kc-db:
+  terraform-state:
 
 services:
 
@@ -14,12 +15,19 @@ services:
       - POSTGRES_DB=keycloak
     volumes:
       - kc-db:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready --username=keycloak --dbname=keycloak" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   # keycloak server
   keycloak:
     image: "quay.io/keycloak/keycloak:26.7.0"
     ports:
       - "8080:8080"
+      - "9000:9000"
     environment:
       # db
       - KC_DB=postgres
@@ -32,9 +40,23 @@ services:
       # admin
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
+      - KC_HEALTH_ENABLED=true
 
     command: [ "start-dev", "--import-realm" ]
     volumes:
       - ./realms:/opt/keycloak/data/import
     depends_on:
       - kc-db
+
+  terraform:
+    image: hashicorp/terraform:1.15.8
+    working_dir: /workspace
+    volumes:
+      - ./iac:/workspace
+      - terraform-state:/terraform-state
+    environment:
+      - TF_LOG=INFO
+    command: ["-chdir=/workspace", "apply", "-auto-approve"]
+    depends_on:
+      kc-db:
+        condition: service_healthy
