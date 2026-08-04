@@ -40,9 +40,7 @@ services:
       - KC_HEALTH_ENABLED=true
       - KC_PROXY_HEADERS=xforwarded
 
-    command: [ "start-dev", "--import-realm" ]
-    volumes:
-      - ./realms:/opt/keycloak/data/import
+    command: [ "start-dev" ]
     depends_on:
       - kc-db
 
