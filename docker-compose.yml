@@ -25,9 +25,6 @@ services:
   # keycloak server
   keycloak:
     image: "quay.io/keycloak/keycloak:26.7.0"
-    ports:
-      - "8080:8080"
-      - "9000:9000"
     environment:
       # db
       - KC_DB=postgres
@@ -60,3 +57,13 @@ services:
     depends_on:
       kc-db:
         condition: service_healthy
+
+  proxy:
+    image: "traefik:v3.7.10"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic-config.yml:/etc/traefik/dynamic/config.yml:ro
+      - ./logs:/var/log/traefik/
