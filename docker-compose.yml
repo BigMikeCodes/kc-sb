@@ -42,7 +42,20 @@ services:
 
     command: [ "start-dev" ]
     depends_on:
-      - kc-db
+      kc-db:
+        condition: service_healthy
+
+    # The keycloak image is stripped down, can't use curl/ wget etc...
+    # TODO: investigate using a custom image for this that is built from a docker file that has curl/wget or a custom binary
+    healthcheck:
+      test: [
+        "CMD-SHELL",
+        "exec 3<>/dev/tcp/127.0.0.1/9000 && echo -e 'GET /health/ready HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && grep -q 'HTTP/1.1 200 OK' <&3"
+      ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   terraform:
     image: hashicorp/terraform:1.15.8
@@ -54,7 +67,7 @@ services:
       - TF_LOG=INFO
     command: ["-chdir=/workspace", "apply", "-auto-approve"]
     depends_on:
-      kc-db:
+      keycloak:
         condition: service_healthy
 
   proxy:
