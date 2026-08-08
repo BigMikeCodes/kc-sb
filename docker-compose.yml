@@ -70,6 +70,11 @@ services:
       keycloak:
         condition: service_healthy
 
+  # Otel sink, view logs traces & metrics
+  aspire:
+    image: "mcr.microsoft.com/dotnet/aspire-dashboard"
+
+
   # All inbound traffic via traefik, see config under ./traefik
   # Allows easier routing via .localhost
   proxy:
