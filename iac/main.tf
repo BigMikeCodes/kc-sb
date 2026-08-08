@@ -10,13 +10,13 @@ terraform {
 }
 
 provider "keycloak" {
-  url       = "http://127.0.0.1:8080"
+  url       = "http://keycloak:8080"
   client_id = "admin-cli"
   username  = "admin"
   password  = "admin"
 }
 
-resource "keycloak_realm" "job_plan_realm" {
+resource "keycloak_realm" "kc_sb_realm" {
   realm = "kc-sb"
   display_name = "Keycloak Spring Boot demo"
   enabled = true
@@ -36,13 +36,13 @@ resource "keycloak_realm" "job_plan_realm" {
 }
 
 data "keycloak_openid_client" "realm_management_client" {
-    realm_id = keycloak_realm.job_plan_realm.id
+    realm_id = keycloak_realm.kc_sb_realm.id
     client_id = "realm-management"
 }
 
 # General purpose public client that can be used to call the api
 resource "keycloak_openid_client" "default_client" {
-  realm_id = keycloak_realm.job_plan_realm.id
+  realm_id = keycloak_realm.kc_sb_realm.id
   client_id = "default-client"
   name = "Default Client"
   access_type = "PUBLIC"
@@ -58,7 +58,7 @@ resource "keycloak_openid_client" "default_client" {
 
 # Service account - used by the api
 resource "keycloak_openid_client" "api_service_account_client" {
-  realm_id = keycloak_realm.job_plan_realm.id
+  realm_id = keycloak_realm.kc_sb_realm.id
   client_id = "api-service-account"
   name = "Api Service Account"
   access_type = "CONFIDENTIAL"
@@ -70,48 +70,21 @@ resource "keycloak_openid_client" "api_service_account_client" {
 resource "keycloak_openid_client_service_account_role" "api_service_account_role" {
   for_each = toset(var.api_service_account_roles)
 
-  realm_id = keycloak_realm.job_plan_realm.id
+  realm_id = keycloak_realm.kc_sb_realm.id
   client_id = data.keycloak_openid_client.realm_management_client.id
   service_account_user_id = keycloak_openid_client.api_service_account_client.service_account_user_id
   role = each.value
 }
 
-resource "keycloak_role" "job_plan_application_role" {
+resource "keycloak_role" "demo_application_role" {
   for_each = toset(var.roles)
 
-  realm_id    = keycloak_realm.job_plan_realm.id
+  realm_id    = keycloak_realm.kc_sb_realm.id
   name        = each.value
   description = "Application role ${each.value}"
 }
 
-# An initial user for setup/ local dev
-resource "keycloak_user" "init_user" {
-  realm_id = keycloak_realm.job_plan_realm.id
-  username = "init.user@jobplan.dev"
-  email = "init.user@jobplan.dev"
-  first_name = "init"
-  last_name = "user"
-  email_verified = true
-  enabled = true
-  initial_password {
-    value = "test123"
-    temporary = false
-  }
-}
-
 resource "keycloak_group" "admin_group" {
-  realm_id = keycloak_realm.job_plan_realm.id
+  realm_id = keycloak_realm.kc_sb_realm.id
   name = "admin"
-}
-
-resource "keycloak_group_roles" "admin_group_roles" {
-  realm_id = keycloak_realm.job_plan_realm.id
-  group_id = keycloak_group.admin_group.id
-  role_ids = values(keycloak_role.job_plan_application_role)[*].id
-}
-
-resource "keycloak_group_memberships" "init_user_admin_membership" {
-  realm_id = keycloak_realm.job_plan_realm.id
-  group_id = keycloak_group.admin_group.id
-  members = [ keycloak_user.init_user.username ]
 }
