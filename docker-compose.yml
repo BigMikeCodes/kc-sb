@@ -24,7 +24,9 @@ services:
 
   # keycloak server
   keycloak:
-    image: "quay.io/keycloak/keycloak:26.7.0"
+    build:
+      context: ./keycloak
+      dockerfile: Dockerfile
     environment:
       # db
       - KC_DB=postgres
@@ -37,8 +39,17 @@ services:
       # admin
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
-      - KC_HEALTH_ENABLED=true
       - KC_PROXY_HEADERS=xforwarded
+      - KC_FEATURES=opentelemetry-metrics:v1,opentelemetry-logs:v1
+
+      # Observability
+      - KC_HEALTH_ENABLED=true
+      - KC_METRICS_ENABLED=true
+      - KC_TRACING_ENABLED=true
+      - KC_TELEMETRY_METRICS_ENABLED=true
+      - KC_TELEMETRY_SERVICE_NAME=keycloak
+      - KC_TELEMETRY_METRICS_ENDPOINT=http://aspire:18889
+      - KC_TRACING_ENDPOINT=http://aspire:18889
 
     command: [ "start-dev" ]
     depends_on:
