@@ -44,12 +44,19 @@ services:
 
       # Observability
       - KC_HEALTH_ENABLED=true
-      - KC_METRICS_ENABLED=true
-      - KC_TRACING_ENABLED=true
-      - KC_TELEMETRY_METRICS_ENABLED=true
+
       - KC_TELEMETRY_SERVICE_NAME=keycloak
+
+      - KC_METRICS_ENABLED=true
+      - KC_TELEMETRY_METRICS_ENABLED=true
       - KC_TELEMETRY_METRICS_ENDPOINT=http://aspire:18889
+
+      - KC_TRACING_ENABLED=true      
       - KC_TRACING_ENDPOINT=http://aspire:18889
+
+      - KC_TELEMETRY_LOGS_ENABLED=true
+      - KC_TELEMETRY_LOGS_ENDPOINT=http://aspire:18889
+      - KC_TELEMETRY_LOGS_PROTOCOL=grpc
 
     command: [ "start-dev" ]
     depends_on:
@@ -84,6 +91,8 @@ services:
   # Otel sink, view logs traces & metrics
   aspire:
     image: "mcr.microsoft.com/dotnet/aspire-dashboard"
+    environment:
+      - ASPIRE_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true
 
 
   # All inbound traffic via traefik, see config under ./traefik
