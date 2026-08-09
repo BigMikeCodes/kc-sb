@@ -12,3 +12,11 @@ providers:
 accessLog:
   format: json
   filePath: /var/log/traefik/access.json
+
+tracing:
+  serviceName: traefik
+  sampleRate: 1.0
+  otlp:
+    grpc:
+      insecure: true
+      endpoint: "aspire:18889"
