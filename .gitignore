@@ -33,6 +33,6 @@ build/
 .vscode/
 
 ### Terraform ###
-/iac/terraform.tfstate
-/iac/terraform.tfstate.backup
-/iac/.terraform
+/local/iac/terraform.tfstate
+/local/iac/terraform.tfstate.backup
+/local/iac/.terraform

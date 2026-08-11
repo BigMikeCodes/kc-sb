@@ -25,7 +25,7 @@ services:
   # keycloak server
   keycloak:
     build:
-      context: ./keycloak
+      context: local/keycloak
       dockerfile: Dockerfile
     environment:
       # db
@@ -79,11 +79,13 @@ services:
     image: hashicorp/terraform:1.15.8
     working_dir: /workspace
     volumes:
-      - ./iac:/workspace
+      - ./local/iac:/workspace
       - terraform-state:/terraform-state
     environment:
       - TF_LOG=INFO
-    command: ["-chdir=/workspace", "apply", "-auto-approve"]
+    entrypoint: []
+    # Provide the shell command string as the command; the shell invoked above will execute it.
+    command: sh -c "terraform -chdir=/workspace init && terraform -chdir=/workspace apply -auto-approve"
     depends_on:
       keycloak:
         condition: service_healthy
@@ -103,6 +105,6 @@ services:
       - "80:80"
       - "8080:8080"
     volumes:
-      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-      - ./traefik/dynamic-config.yml:/etc/traefik/dynamic/config.yml:ro
-      - ./logs:/var/log/traefik/
+      - ./local/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./local/traefik/dynamic-config.yml:/etc/traefik/dynamic/config.yml:ro
+      - ./local/traefik/logs:/var/log/traefik/
