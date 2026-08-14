@@ -25,7 +25,7 @@ services:
   # keycloak server
   keycloak:
     build:
-      context: local/keycloak
+      context: local/images/keycloak
       dockerfile: Dockerfile
     environment:
       # db
