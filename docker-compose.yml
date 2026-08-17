@@ -2,6 +2,7 @@ volumes:
   pg:
   terraform-state:
   tofu-pg-state:
+  tofu-kc-state:
 
 services:
 
@@ -88,27 +89,23 @@ services:
       retries: 5
       start_period: 30s
 
-  terraform:
-    image: hashicorp/terraform:1.15.8
-    working_dir: /workspace
-    volumes:
-      - ./local/iac:/workspace
-      - terraform-state:/terraform-state
-    environment:
-      - TF_LOG=INFO
-    entrypoint: []
-    # Provide the shell command string as the command; the shell invoked above will execute it.
-    command: sh -c "terraform -chdir=/workspace init && terraform -chdir=/workspace apply -auto-approve"
+  # Keycloak IaC
+  tofu-kc:
+    build:
+      context: local/images/opentofu
+      dockerfile: Dockerfile
     depends_on:
       keycloak:
         condition: service_healthy
+    volumes:
+      - ./local/iac/keycloak:/workspace:ro
+      - tofu-kc-state:/tofu
 
   # Otel sink, view logs traces & metrics
   aspire:
     image: "mcr.microsoft.com/dotnet/aspire-dashboard"
     environment:
       - ASPIRE_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true
-
 
   # All inbound traffic via traefik, see config under ./traefik
   # Allows easier routing via .localhost

@@ -1,11 +1,26 @@
-# This file is maintained automatically by "terraform init".
+# This file is maintained automatically by "tofu init".
 # Manual edits may be lost in future updates.
 
-provider "registry.terraform.io/keycloak/keycloak" {
+provider "registry.opentofu.org/keycloak/keycloak" {
   version     = "5.9.0"
   constraints = "5.9.0"
   hashes = [
+    "h1:B3TmJuRUjnBcVwoMs8rFdsijeVlEB77EE5txcw54IJM=",
+    "h1:Cvxj9LVwCW63jNpGIORhprcqCD2u50q+LZpOLw6J/4g=",
+    "h1:NoJtPcA5StMDQ931+kkXYYahZI7xp+nL/FOWoLCytiQ=",
+    "h1:NpWNg4osooa9YvHTGBx/z/CEUZ3hcQD67AMSpNW+zGw=",
+    "h1:SHIaKk0Gf3v0675ppQLoytITNSFqvGjonoQaDOsJWJg=",
+    "h1:SUrBIxMxZiyd/Fmb4IfrgpK5w3xDnqo+RRqSt2cs2W0=",
+    "h1:UPN11ZU914KWmMePwIFhxh4xDCam+iwxEZ7m2HXmals=",
     "h1:VfaBUWgd4jnJvjBxVFx2MvHe4mZRbYaM2sR++5dnBc0=",
+    "h1:cWhHRtlPZKaXXtTxVcMvoKe5jEr3K9aG8qYWhElqHoE=",
+    "h1:eXj3btKXoNi3Fi78YEEpfQjyn9ADStUwHxnD7EAis+8=",
+    "h1:gPuQHog/FLTpPpyjuuOSKcwszkR9TTV9HOt3W5+kiOU=",
+    "h1:h7jNReQE38LERhEnjt9+BOMohPoibhJBDVtVnbZWdC0=",
+    "h1:hHK6lTQ4uhY8/+PG3RsFN9iNIGglHQ6ich8UlxUzYa8=",
+    "h1:kT9fRGr40FUDZtfeoavhOs6obixINxGEfboDLuCBSjU=",
+    "h1:kh858eZdtuaADh+XKp+Ayl/B7g4ZjVm484uya1+tk0c=",
+    "h1:zyLhqjAezPSgZF2SYxEjOgaRRJD5inc/sshQI2Gg1LI=",
     "zh:13a17a2eda64f69e2c6eb0a247fdf9e8f4c06f5708108fe9198cb1bae7dd962f",
     "zh:3403aa7b40a0395a89746b21d86d0401003920327a99796e736aab630d50b232",
     "zh:37c596dcf55e871d531b1c866d09392d07337d8d3333a4f1b2ebdc8cc14aa1ec",

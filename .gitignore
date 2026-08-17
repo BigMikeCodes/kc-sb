@@ -36,3 +36,4 @@ build/
 /local/iac/terraform.tfstate
 /local/iac/terraform.tfstate.backup
 /local/iac/.terraform
+**/.terraform/*
