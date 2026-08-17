@@ -1,70 +1,120 @@
-# Run keycloak server
-# docker compose --profile default up
-
-# Export realm configuration
-# docker compose --profile export-realm up
-
 volumes:
-  kc-db:
+  pg:
+  terraform-state:
+  tofu-pg-state:
+  tofu-kc-state:
 
 services:
 
-  # keycloak pg db
-  kc-db:
-    image: "postgres:17-alpine"
-    profiles:
-      - export-realm
-      - default
+  # Postgres
+  pg:
+    image: "postgres:18-alpine"
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=keycloak
-      - POSTGRES_PASSWORD=keycloak_pw
-      - POSTGRES_DB=keycloak
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgrespassword
+      - POSTGRES_DB=postgres
     volumes:
-      - kc-db:/var/lib/postgresql/data
+      - pg:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready --username=postgres --dbname=postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Create databases & users
+  tofu-pg:
+    build:
+      context: local/images/opentofu
+      dockerfile: Dockerfile
+    depends_on:
+      pg:
+        condition: service_healthy
+    volumes:
+      - ./local/iac/postgres:/workspace:ro
+      - tofu-pg-state:/tofu
 
   # keycloak server
   keycloak:
-    image: "quay.io/keycloak/keycloak:26.6.3"
-    profiles:
-      - default
-    ports:
-      - "8080:8080"
+    build:
+      context: local/images/keycloak
+      dockerfile: Dockerfile
     environment:
       # db
       - KC_DB=postgres
-      - KC_DB_URL_HOST=kc-db
+      - KC_DB_URL_HOST=pg
       - KC_DB_URL_PORT=5432
-      - KC_DB_URL_DATABASE=keycloak
+      - KC_DB_URL_DATABASE=kc
       - KC_DB_USERNAME=keycloak
-      - KC_DB_PASSWORD=keycloak_pw
+      - KC_DB_PASSWORD=password123
 
       # admin
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
+      - KC_PROXY_HEADERS=xforwarded
+      - KC_FEATURES=opentelemetry-metrics:v1,opentelemetry-logs:v1
 
-    command: [ "start-dev", "--import-realm" ]
-    volumes:
-      - ./realms:/opt/keycloak/data/import
+      # Observability
+      - KC_HEALTH_ENABLED=true
+
+      - KC_TELEMETRY_SERVICE_NAME=keycloak
+
+      - KC_METRICS_ENABLED=true
+      - KC_TELEMETRY_METRICS_ENABLED=true
+      - KC_TELEMETRY_METRICS_ENDPOINT=http://aspire:18889
+
+      - KC_TRACING_ENABLED=true      
+      - KC_TRACING_ENDPOINT=http://aspire:18889
+
+      - KC_TELEMETRY_LOGS_ENABLED=true
+      - KC_TELEMETRY_LOGS_ENDPOINT=http://aspire:18889
+      - KC_TELEMETRY_LOGS_PROTOCOL=grpc
+
+    command: [ "start-dev" ]
     depends_on:
-      - kc-db
+      pg:
+        condition: service_healthy
 
-  # Export keycloak realm to ./realms
-  keycloak-export:
-    image: "quay.io/keycloak/keycloak:26.6.3"
-    profiles:
-      - export-realm
+    # The keycloak image is stripped down, can't use curl/ wget etc...
+    # TODO: investigate using a custom image for this that is built from a docker file that has curl/wget or a custom binary
+    healthcheck:
+      test: [
+        "CMD-SHELL",
+        "exec 3<>/dev/tcp/127.0.0.1/9000 && echo -e 'GET /health/ready HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && grep -q 'HTTP/1.1 200 OK' <&3"
+      ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Keycloak IaC
+  tofu-kc:
+    build:
+      context: local/images/opentofu
+      dockerfile: Dockerfile
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    volumes:
+      - ./local/iac/keycloak:/workspace:ro
+      - tofu-kc-state:/tofu
+
+  # Otel sink, view logs traces & metrics
+  aspire:
+    image: "mcr.microsoft.com/dotnet/aspire-dashboard"
     environment:
-      - KC_DB=postgres
-      - KC_DB_URL_HOST=kc-db
-      - KC_DB_URL_PORT=5432
-      - KC_DB_URL_DATABASE=keycloak
-      - KC_DB_USERNAME=keycloak
-      - KC_DB_PASSWORD=keycloak_pw
+      - ASPIRE_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true
 
-    command: [ "export", "--realm", "test-realm" ,"--dir", "/var/export", "--verbose"]
+  # All inbound traffic via traefik, see config under ./traefik
+  # Allows easier routing via .localhost
+  proxy:
+    image: "traefik:v3.7.10"
+    ports:
+      - "80:80"
+      - "8080:8080"
     volumes:
-      - ./realms:/var/export
-    depends_on:
-      - kc-db
+      - ./local/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./local/traefik/dynamic-config.yml:/etc/traefik/dynamic/config.yml:ro
+      - ./local/traefik/logs:/var/log/traefik/

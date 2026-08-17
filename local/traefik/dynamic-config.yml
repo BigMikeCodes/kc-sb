@@ -1,0 +1,40 @@
+http:
+  services:
+    keycloak-service:
+      loadBalancer:
+        servers:
+          - url: http://keycloak:8080
+
+    keycloak-admin-service:
+      loadBalancer:
+        servers:
+          - url: http://keycloak:8080
+
+    aspire-service:
+      loadBalancer:
+        servers:
+          - url: http://aspire:18888
+
+  routers:
+
+    # standard auth requests from end users etc....
+    # http://auth.localhost
+    keycloak-router:
+      entryPoints:
+        - "web"
+      rule: Host(`auth.localhost`) && (PathPrefix(`/realms`) || PathPrefix(`/resources`) || PathPrefix(`/.well-known`))
+      service: keycloak-service
+
+    # admin ui - http://admin.localhost
+    keycloak-admin-router:
+      entryPoints:
+        - "web"
+      rule: Host(`admin.localhost`) && (PathPrefix(`/admin`) || PathPrefix(`/resources`) || PathPrefix(`/realms`))
+      service: keycloak-admin-service
+
+    # aspire dashboard - http://aspire.localhost
+    aspire-router:
+      entryPoints:
+        - "web"
+      rule: Host(`aspire.localhost`)
+      service: aspire-service

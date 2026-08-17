@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Terraform ###
+/local/iac/terraform.tfstate
+/local/iac/terraform.tfstate.backup
+/local/iac/.terraform
+**/.terraform/*
