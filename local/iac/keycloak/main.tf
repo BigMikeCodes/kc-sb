@@ -6,6 +6,14 @@ terraform {
       source  = "keycloak/keycloak"
       version = "5.9.0"
     }
+    openbao = {
+      source = "hashicorp/vault"
+      version = "5.11.0" 
+    }
+  }
+
+  backend "local" {
+    path = "/tofu/state/tofu.state"
   }
 }
 
@@ -15,6 +23,11 @@ provider "keycloak" {
   username  = "admin"
   password  = "admin"
 }
+
+provider "openbao" {
+  address = "http://ob:"
+}
+
 
 resource "keycloak_realm" "kc_sb_realm" {
   realm = "kc-sb"

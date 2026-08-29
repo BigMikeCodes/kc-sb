@@ -15,6 +15,11 @@ http:
         servers:
           - url: http://aspire:18888
 
+    openbao-service:
+      loadBalancer:
+        servers:
+          - url: http://ob:8200
+
   routers:
 
     # standard auth requests from end users etc....
@@ -38,3 +43,10 @@ http:
         - "web"
       rule: Host(`aspire.localhost`)
       service: aspire-service
+    
+    # Openbao - http://ob.localhost
+    openbao-router:
+      entryPoints:
+        - "web"
+      rule: Host(`ob.localhost`)
+      service: openbao-service
