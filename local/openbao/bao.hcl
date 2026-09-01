@@ -1,12 +1,14 @@
 ui = true
+cluster_addr = "http://127.0.0.1:8201"
 
 seal "static" {
   current_key_id = "local-dev-static"
   current_key    = "file:///bao/config/local-dev-unseal.key"
 }
 
-storage "file" {
-  path = "/openbao/file"
+storage "raft" {
+  path    = "/openbao/file"
+  node_id = "dev_node"
 }
 
 listener "tcp" {
