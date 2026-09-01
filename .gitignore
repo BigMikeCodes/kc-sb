@@ -37,3 +37,6 @@ build/
 /local/iac/terraform.tfstate.backup
 /local/iac/.terraform
 **/.terraform/*
+
+### traefik logs
+/local/traefik/logs

@@ -1,8 +1,8 @@
 volumes:
   pg:
-  terraform-state:
   tofu-pg-state:
   tofu-kc-state:
+  ob:
 
 services:
 
@@ -118,3 +118,13 @@ services:
       - ./local/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
       - ./local/traefik/dynamic-config.yml:/etc/traefik/dynamic/config.yml:ro
       - ./local/traefik/logs:/var/log/traefik/
+
+  ob:
+    image: "openbao/openbao:2.6.1"
+    environment:
+      - BAO_API_ADDR=http://0.0.0.0:8200
+      - BAO_CONFIG_PATH=/bao/config
+    volumes:
+      - ob:/openbao/file
+      - ./local/openbao:/bao/config:ro
+    command: server

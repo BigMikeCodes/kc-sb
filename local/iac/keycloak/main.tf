@@ -6,6 +6,14 @@ terraform {
       source  = "keycloak/keycloak"
       version = "5.9.0"
     }
+    vault = {
+      source = "hashicorp/vault"
+      version = "5.11.0" 
+    }
+  }
+
+  backend "local" {
+    path = "/tofu/state/tofu.state"
   }
 }
 
@@ -15,6 +23,18 @@ provider "keycloak" {
   username  = "admin"
   password  = "admin"
 }
+
+provider "vault" {
+  address = "http://ob:8200"
+  auth_login {
+    path = "/auth/approle/login"
+    parameters = {
+      role_id   = "local-dev-tofu-role-id"
+      secret_id = "local-dev-tofu-secret-id"
+    }
+  }
+}
+
 
 resource "keycloak_realm" "kc_sb_realm" {
   realm = "kc-sb"
@@ -87,4 +107,27 @@ resource "keycloak_role" "demo_application_role" {
 resource "keycloak_group" "admin_group" {
   realm_id = keycloak_realm.kc_sb_realm.id
   name = "admin"
+}
+
+
+# add the kv secrets engine
+resource "vault_mount" "app_kv2" {
+  path = "app-secrets"
+  type = "kv-v2"
+  options = {
+    version = "2"
+    type    = "kv-v2"
+  }
+  description = "Application secrets"
+}
+
+resource "vault_kv_secret_v2" "keycloak_credentials" {
+  mount               = vault_mount.app_kv2.path
+  name                = "dev/keycloak/service-account-api-client"
+  delete_all_versions = true
+
+  data_json = jsonencode({
+    client_id     = keycloak_openid_client.api_service_account_client.client_id
+    client_secret = keycloak_openid_client.api_service_account_client.client_secret
+  })
 }
