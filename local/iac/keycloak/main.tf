@@ -131,3 +131,30 @@ resource "vault_kv_secret_v2" "keycloak_credentials" {
     client_secret = keycloak_openid_client.api_service_account_client.client_secret
   })
 }
+
+locals {
+  ten_years_in_seconds = 10 * 365 * 24 *60 * 60
+}
+
+
+resource "vault_mount" "acme_pki" {
+  path = "acme-pki"
+  type = "pki"
+  description = "acme pki engine, issues self signed certs for local dev"
+  max_lease_ttl_seconds = local.ten_years_in_seconds
+}
+
+resource "vault_pki_secret_backend_root_cert" "test" {
+  depends_on            = [vault_mount.acme_pki]
+  backend               = vault_mount.acme_pki.path
+  type                  = "exported"
+  common_name           = "Local Dev Root CA"
+  ttl                   = tostring(local.ten_years_in_seconds)
+  format                = "pem"
+  private_key_format    = "der"
+  key_type              = "ec"
+  key_bits              = 384
+  exclude_cn_from_sans  = true
+  ou                    = "Local Dev"
+  organization          = "Local Dev"
+}
