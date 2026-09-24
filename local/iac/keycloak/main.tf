@@ -144,7 +144,7 @@ resource "vault_mount" "acme_pki" {
   max_lease_ttl_seconds = local.ten_years_in_seconds
 }
 
-resource "vault_pki_secret_backend_root_cert" "test" {
+resource "vault_pki_secret_backend_root_cert" "root_cert" {
   depends_on            = [vault_mount.acme_pki]
   backend               = vault_mount.acme_pki.path
   type                  = "exported"
@@ -157,4 +157,44 @@ resource "vault_pki_secret_backend_root_cert" "test" {
   exclude_cn_from_sans  = true
   ou                    = "Local Dev"
   organization          = "Local Dev"
+}
+
+resource "vault_pki_secret_backend_config_cluster" "mount" {
+  backend  = vault_mount.acme_pki.path
+  path     = "http://ob:8200/v1/${vault_mount.acme_pki.path}"
+  aia_path = "http://ob:8200/v1/${vault_mount.acme_pki.path}"
+}
+
+resource "vault_pki_secret_backend_role" "traefik_localhost" {
+  backend = vault_mount.acme_pki.path
+
+  name = "traefik-localhost"
+
+  allowed_domains = ["localhost", "*.localhost"]
+  allow_subdomains = true
+  allow_bare_domains = true
+  allow_localhost = true
+  allow_ip_sans = true
+
+  key_type = "ec"
+  key_bits = 256
+
+  server_flag = true
+  client_flag = false
+  require_cn = false
+  use_csr_common_name = true
+
+  ttl     = "24h"
+  max_ttl = "720h"
+}
+
+resource "vault_pki_secret_backend_config_acme" "example" {
+  backend                  = vault_mount.acme_pki.path
+  enabled                  = true
+  allowed_issuers          = ["*"]
+  allowed_roles            = ["${vault_pki_secret_backend_role.traefik_localhost.name}"]
+  allow_role_ext_key_usage = false
+  default_directory_policy = "sign-verbatim"
+  dns_resolver             = ""
+  eab_policy               = "not-required"
 }

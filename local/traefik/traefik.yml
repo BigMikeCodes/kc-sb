@@ -5,6 +5,17 @@ entrypoints:
   web:
     address: :80
 
+  websecure:
+    address: :443
+
+certificatesResolvers:
+  ob-acme:
+    acme:
+      storage: acme.json
+      caServer: http://ob:8200/v1/acme-pki/directory
+      httpChallenge:
+        entryPoint: web
+
 providers:
   file:
     directory: /etc/traefik/dynamic/

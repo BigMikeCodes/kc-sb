@@ -41,8 +41,11 @@ http:
     aspire-router:
       entryPoints:
         - "web"
+        - "websecure"
       rule: Host(`aspire.localhost`)
       service: aspire-service
+      tls:
+        certResolver: ob-acme 
     
     # Openbao - http://ob.localhost
     openbao-router:
